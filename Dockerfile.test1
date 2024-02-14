@@ -1,0 +1,20 @@
+FROM centos:centos7.9.2009 as upcentos7
+RUN yum update -y
+
+FROM upcentos7 as sudocentos7
+RUN yum install sudo -y
+
+FROM sudocentos7 as test-centos7
+ARG UID=1000
+ARG GID=1000
+ARG USERNAME=testuser
+ARG GROUPNAME=testuser
+RUN groupadd -g $GID $GROUPNAME
+RUN useradd -d /home/$USERNAME -m -k /etc/skel -u $UID -g $GROUPNAME -G wheel $USERNAME
+RUN echo $USERNAME:password | chpasswd
+USER $USERNAME:$GROUPNAME
+
+FROM test-centos7 as end
+USER root:root
+RUN yum install gcc
+
